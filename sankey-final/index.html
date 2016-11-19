@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MOOC Flow Chart</title>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="sankey2.js"></script>
+    <script src="d3.chart.min.js"></script>
+    <script src="d3.chart.sankey.min.js"></script>
+
+    <style>
+      body {
+        padding: 10px;
+        min-width: 600px;
+        max-width: 1200px;
+        margin: auto;
+      }
+      #chart {
+        margin-top: 30px;
+        height: 600px;
+        font: 13px sans-serif;
+      }
+      #legend {
+        margin-top: 0px;
+        height: 40px;
+      }
+      .node rect {
+        fill-opacity: .9;
+        shape-rendering: crispEdges;
+        stroke-width: 0;
+      }
+      .node text {
+        text-shadow: 0 1px 0 #fff;
+      }
+      .link {
+        fill: none;
+        stroke: #000;
+        stroke-opacity: .4;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+    <div id="legend"></div>
+
+    <script>
+    d3.select("#legend").append("svg")
+      .attr("width", 960)
+      .attr("height", 80)
+      .append("svg:image")
+      .attr("xlink:href", "legend.png")
+      .attr("width", 500)
+      .attr("height", 50)
+      .attr("x", 300)
+      .attr("y",10);
+
+      // Here you add color mapping
+      var colors = {
+            'Idle':               '#FF0000', //'#607c90'
+            'Input':              '#DF00FF',
+            'Review':             '#E8A107',
+            'Exercise':           '#E86715',
+            'Search':             '#001BE8',
+            'Interact':           '#00E1FF',
+            'Pass':               '#00FF0C',
+            'Fail':               '#888888'
+          };
+
+      // Here you load data and binding
+      // and call functions to draww
+      d3.json("energy.json", function(error, json) {
+        var chart = d3.select("#chart").append("svg").chart("Sankey.Path");
+        chart
+          .name(label)
+          .colorNodes(function(name, node) {
+            return color(node, 1) || colors.fallback;
+          })
+          .colorLinks(function(link) {
+            return color(link.target, 1) || colors.fallback;
+          })
+          .nodeWidth(15)
+          .nodePadding(10)
+          .spread(true)
+          .iterations(0)
+          .draw(json);
+
+        function label(node) {
+            return node.name.split("_")[0];
+        }
+        function color(node, depth) {
+          var id = node.name.split("_")[0];
+          if (colors[id]) {
+            return colors[id];
+          } else if (depth > 0 && node.targetLinks && node.targetLinks.length == 1) {
+            return color(node.targetLinks[0].source, depth-1);
+          } else {
+            return null;
+          }
+        }
+      });
+
+        d3.selectAll("g").attr("transform", "translate(0,10)");
+    </script>
+  </body>
+</html>

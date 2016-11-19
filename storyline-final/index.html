@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 40, right: 60, bottom: 30, left: 90},
+    width = 1320 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+var x = d3.time.scale()
+    .range([20, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var w = d3.scale.sqrt()
+    .range([0, 20]);
+
+var xlabel = ["Session 1", "Session 2", "Session 3", "Session 4", "Session 5", "Session 6", "Session 7", "Session 8", "Session 9", "Session 10", "Finish"];
+var ylabel = ["Idle", "Input", "Review", "Exercise", "Search", "Interact", "Pass"];
+
+var color = d3.scale.category10();
+var pcolor = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .tickFormat(function(d,i) { return xlabel[i]; })
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .tickFormat(function(d) { return ylabel[d]; })
+    .orient("left");
+
+// add XY mapping for sessions
+var line = d3.svg.line()
+    .interpolate("monotone")
+    .x(function(d) {console.log(d); return x(d.path); })
+    .y(function(d) { return y(d.category); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var patterns = new Array();
+var volume;
+
+//// To add info of nodes 
+// d3.csv("patterns.csv", function(error, data) {
+//   if (error) throw error;
+//   pcolor.domain(d3.keys(data[0]).filter(function(key) { return key !== "index" ; }));
+//   volumes = pcolor.domain().map(function(name) {
+//     return {
+//       name: name,
+//       values: data.map(function(d) {
+//         return {indexs: d.index, sizes: +d[name]};
+//       })
+//     };
+//   });
+//   // Here you could add sth for nodes 
+//   // console.log(volumes);
+// });
+
+// add color mapping for grades
+function colors(grade)
+{
+  if(grade>75)
+    return "GREEN";
+  else if(grade>35)
+    return "LIGHTGREEN";
+  else 
+    return "LIGHTGREY";
+
+}
+
+d3.csv("patterns20.csv", function(error, data) {
+  if (error) throw error;
+
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "path" && key !== "grade"; }));
+
+  var students = color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {path: d.path, category: +d[name]};
+      })
+    };
+  });
+
+  // domain range for x, y, w
+  x.domain(["1","11"]);
+
+  y.domain([
+    d3.min(students, function(c) { return d3.min(c.values, function(v) { return v.category; }); }),
+    d3.max(students, function(c) { return d3.max(c.values, function(v) { return v.category; }); })
+  ]);
+
+  w.domain([
+    d3.min(volumes, function(c) { return d3.min(c.values, function(v) { return v.sizes; }); }),
+    d3.max(volumes, function(c) { return d3.max(c.values, function(v) { return v.sizes; }); })
+  ]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("x", width+60)
+      .attr("y", -5)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end");
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+// Here you start to append lines for students 
+  var student = svg.selectAll(".student")
+      .data(students)
+    .enter().append("g")
+      .attr("class", "student");
+
+  student.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return colors(d.name); })
+      .append("title")
+      .text( function(d) { return d.name; });
+      d3.selectAll(".line")
+      .on("mouseover", function(d) {
+        d3.selectAll("#hover").remove();
+        student.append("path")
+          .attr("class", "line")
+          .attr("id", "hover")
+          .attr("d", function() { return line(d.values); })
+          .style("stroke", "RED")
+          .append("title")
+          .text( function() { return "Grade: "+ d.name; });
+      });
+
+  var volume = svg.selectAll(".volume")
+      .data(volumes)
+    .enter().append("g")
+      .attr("class", "volume");
+});
+
+</script>
