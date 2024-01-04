@@ -1,1 +1,1 @@
-[![Demo: MOOC Flow Chart](https://i.stack.imgur.com/demo.png)](https://youtu.be/vt5fpE0bzSY](https://cede-webapps.epfl.ch/GraphDemos/MOOCsLearningStrategies/)https://cede-webapps.epfl.ch/GraphDemos/MOOCsLearningStrategies/)
+[![Demo: MOOC Flow Chart](https://github.com/renie26/MOOC_Viz/blob/master/graphdemo/demo.png)](https://youtu.be/vt5fpE0bzSY](https://cede-webapps.epfl.ch/GraphDemos/MOOCsLearningStrategies/)https://cede-webapps.epfl.ch/GraphDemos/MOOCsLearningStrategies/)
